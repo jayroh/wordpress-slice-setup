@@ -55,7 +55,6 @@ create_sudo_user()
     { echo 'export PS1="\[\e[32;1m\]\u\[\e[0m\]\[\e[32m\]@\h\[\e[36m\]\w \[\e[33m\]\$ \[\e[0m\]"'
       echo 'alias ll="ls -la"'
       echo 'alias a2r="sudo /etc/init.d/apache2 stop && sleep 2 && sudo /etc/init.d/apache2 start"'
-      echo 'alias n2r="sudo /etc/init.d/nginx stop && sleep 2 && sudo /etc/init.d/nginx start"'
       echo 'alias ver="cat /etc/lsb-release"'
     } >> /home/$sudo_user/.bashrc
     echo "done."
@@ -115,20 +114,8 @@ install_pkg()
   mysql_secure_installation
   aptitude -y install subversion git-core
   
-  # UNCOMMENT IF YOU'D LIKE POSTFIX
-  # echo "Installing Postfix mail server\n"
-  # echo "Select 'Internet Site', and then for 'System mail name:' -> $hostname\n".
-  # sleep 2
-  # aptitude -y install dnsutils postfix telnet mailx
-  # grep "root: $sudo_user" /etc/aliases > /dev/null 2>&1 || echo "root: $sudo_user" >> /etc/aliases
-  # newaliases
-
-  # USE FOLLOWING 2 LINES IF YOU'D LIKE NGINX INSTEAD OF APACHE
-  # aptitude -y install nginx
-  # aptitude -y install libfcgi0
-  
   echo "Installing Apache.\n"
-  aptitude -y insall apache2-mpm-worker  libapache2-mod-fcgid
+  aptitude -y install apache2-mpm-worker  libapache2-mod-fcgid
   a2enmod fcgid rewrite setenvif headers deflate filter expires
 
   echo "Done."
@@ -136,14 +123,8 @@ install_pkg()
 
 config_web()
 {
-  # mkdir /etc/nginx/conf/
-  # cp files/wp.conf /etc/nginx/conf/
-  # cp files/wp_super_cache.conf /etc/nginx/conf/
-  # cp files/php-fastcgi /etc/default/ 
-  # cp files/php-fastcgi-rc /etc/init.d/php-fastcgi
-  # chmod +x /etc/init.d/php-fastcgi
   cp files/httpd.conf /etc/apache2/httpd.conf
-  mkdir /home/public_html
+  mkdir -p /home/public_html
   groupadd webmasters
   usermod -G webmasters $sudo_user
   usermod -G webmasters www-data
@@ -151,18 +132,16 @@ config_web()
   chmod -R g+w /home/public_html
   find /home/public_html -type d -exec chmod g+s {} \;
   
-  # /etc/init.d/nginx start
-  # /etc/init.d/php-fastcgi start
-  /etc/init.d/apache2 start
+  /etc/init.d/apache2 restart
 }
 
 copy_site_setup_files()
 {
-  mkdir /home/$sudo_user/wp-setup
+  mkdir -p /home/$sudo_user/wp-setup
   cp wordpress-setup.sh /home/$sudo_user/wp-setup/wordpress-setup.sh
-  mkdir /home/$sudo_user/wp-setup/files
+  mkdir -p /home/$sudo_user/wp-setup/files
   cp files/mydomain.com.apache.conf /home/$sudo_user/wp-setup/files/mydomain.com.apache.conf
-  mkdir /home/$sudo_user/wp-setup/tmp
+  mkdir -p /home/$sudo_user/wp-setup/tmp
   chown -R $sudo_user /home/$sudo_user
   chmod -R +x /home/$sudo_user
 }
@@ -211,7 +190,7 @@ setup_firewall
 # install packages
 install_pkg
 
-# configure nginx web server
+# configure apache web server
 config_web
 
 # copy over site setup files
