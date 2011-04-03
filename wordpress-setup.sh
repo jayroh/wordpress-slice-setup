@@ -1,14 +1,14 @@
 #!/bin/bash
 
 #-- User Defined Variables --#
-site=''	#Domain of the site you want to host
-site_db=''	#Name of the MySQL wordpress database
-site_db_user=''	#Database user account
-site_db_passwd=''	#Database password
-mysql_host='localhost'	#MySQL host (usually localhost unless you have a seperate database server)
-mysql_root_user='root'	#MySQL root user (usually leave this as root)
-mysql_root_passwd=''	#Root password for MySQL you setup during server setup
-sudo_user=''	#Your server username
+site=''	                # Domain of the site you want to host
+site_db=''	            # Name of the MySQL wordpress database
+site_db_user=''	        # Database user account
+site_db_passwd=''	      # Database password
+mysql_host='localhost'	# MySQL host (usually localhost unless you have a seperate database server)
+mysql_root_user='root'	# MySQL root user (usually leave this as root)
+mysql_root_passwd=''	  # Root password for MySQL you setup during server setup
+sudo_user=''	          # Your server username
 #-- UDVs End --#
 
 check_vars()
