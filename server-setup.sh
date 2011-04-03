@@ -1,11 +1,11 @@
 #!/bin/bash
 
 #-- User Defined Variables --#
-hostname=''    #Your hostname (e.g. server.example.com)
-sudo_user=''    #Your username
-sudo_user_passwd=''     #your password
-root_passwd=''    #Your new root password
-ssh_port='22'   #Your SSH port if you wish to change it from the default
+hostname=''         # Your hostname (e.g. server.example.com)
+sudo_user=''        # Your username
+sudo_user_passwd='' # Your password
+root_passwd=''      # Your new root password
+ssh_port='22'       # Your SSH port if you wish to change it from the default
 #-- UDV End --#
 
 set_locale()
@@ -114,25 +114,35 @@ install_pkg()
   aptitude -y install mysql-server mysql-client libmysqlclient15-dev
   mysql_secure_installation
   aptitude -y install subversion git-core
-  echo "Installing Postfix mail server\n"
-  echo "Select 'Internet Site', and then for 'System mail name:' -> $hostname\n".
-  sleep 2
-  aptitude -y install dnsutils postfix telnet mailx
-  grep "root: $sudo_user" /etc/aliases > /dev/null 2>&1 || echo "root: $sudo_user" >> /etc/aliases
-  newaliases
-  aptitude -y install nginx
-  aptitude -y install libfcgi0
+  
+  # UNCOMMENT IF YOU'D LIKE POSTFIX
+  # echo "Installing Postfix mail server\n"
+  # echo "Select 'Internet Site', and then for 'System mail name:' -> $hostname\n".
+  # sleep 2
+  # aptitude -y install dnsutils postfix telnet mailx
+  # grep "root: $sudo_user" /etc/aliases > /dev/null 2>&1 || echo "root: $sudo_user" >> /etc/aliases
+  # newaliases
+
+  # USE FOLLOWING 2 LINES IF YOU'D LIKE NGINX INSTEAD OF APACHE
+  # aptitude -y install nginx
+  # aptitude -y install libfcgi0
+  
+  echo "Installing Apache.\n"
+  aptitude -y insall apache2-mpm-worker  libapache2-mod-fcgid
+  a2enmod fcgid rewrite setenvif headers deflate filter expires
+
   echo "Done."
 }
 
 config_web()
 {
-  mkdir /etc/nginx/conf/
-  cp files/wp.conf /etc/nginx/conf/
-  cp files/wp_super_cache.conf /etc/nginx/conf/
-  cp files/php-fastcgi /etc/default/ 
-  cp files/php-fastcgi-rc /etc/init.d/php-fastcgi
-  chmod +x /etc/init.d/php-fastcgi
+  # mkdir /etc/nginx/conf/
+  # cp files/wp.conf /etc/nginx/conf/
+  # cp files/wp_super_cache.conf /etc/nginx/conf/
+  # cp files/php-fastcgi /etc/default/ 
+  # cp files/php-fastcgi-rc /etc/init.d/php-fastcgi
+  # chmod +x /etc/init.d/php-fastcgi
+  cp files/httpd.conf /etc/apache2/httpd.conf
   mkdir /home/public_html
   groupadd webmasters
   usermod -G webmasters $sudo_user
@@ -140,8 +150,10 @@ config_web()
   chown -R $sudo_user.webmasters /home/public_html
   chmod -R g+w /home/public_html
   find /home/public_html -type d -exec chmod g+s {} \;
-  /etc/init.d/nginx start
-  /etc/init.d/php-fastcgi start
+  
+  # /etc/init.d/nginx start
+  # /etc/init.d/php-fastcgi start
+  /etc/init.d/apache2 start
 }
 
 copy_site_setup_files()
@@ -149,9 +161,9 @@ copy_site_setup_files()
   mkdir /home/$sudo_user/wp-setup
   cp wordpress-setup.sh /home/$sudo_user/wp-setup/wordpress-setup.sh
   mkdir /home/$sudo_user/wp-setup/files
-  cp files/mydomain.com /home/$sudo_user/wp-setup/files/mydomain.com	
+  cp files/mydomain.com.apache.conf /home/$sudo_user/wp-setup/files/mydomain.com.apache.conf
   mkdir /home/$sudo_user/wp-setup/tmp
-  chown -R dan /home/$sudo_user
+  chown -R $sudo_user /home/$sudo_user
   chmod -R +x /home/$sudo_user
 }
 
