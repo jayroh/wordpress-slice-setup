@@ -30,9 +30,9 @@ cleanup()
 create_site()
 {
   local opt=""
-  if [ -e "/home/public_html/$site" -a -e "/etc/nginx/sites-available/$site" ]
+  if [ -e "/home/public_html/$site" -a -e "/etc/apache2/sites-available/$site" ]
   then
-    echo "Site is already created on Nginx!"
+    echo "Site is already created for Apache!"
     echo "Do you want to continue?"
     echo "WARNING: all current files in /home/public_html/$site/public will be deleted if you continue!!!"
     while [ "$opt" != "y" -a "$opt" != "Y"  -a "$opt" != "n" -a "$opt" != "N" ]
@@ -49,15 +49,15 @@ create_site()
       fi
     done
   else
-    echo -n "Creating site on nginx..."
-    mkdir /home/public_html/$site && cd /home/public_html/$site && mkdir public private log backup && cd -
+    echo -n "Creating site for Apache..."
+    mkdir -p /home/public_html/$site && cd /home/public_html/$site && mkdir -p public private log backup && cd -
     chown -R $sudo_user.webmasters /home/public_html
     find /home/public_html -type d -exec chmod g+s {} \; > /dev/null 2>&1
-    cp files/mydomain.com tmp/domain.$$
+    cp files/mydomain.com.apache.conf tmp/domain.$$
     sed -i -r "s/mydomain.com/$site/g" tmp/domain.$$
-    cp tmp/domain.$$ /etc/nginx/sites-available/$site
-    ln -s /etc/nginx/sites-available/$site  /etc/nginx/sites-enabled/$site
-    /etc/init.d/nginx restart > /dev/null 2>&1
+    cp tmp/domain.$$ /etc/apache2/sites-available/$site
+    ln -s /etc/apache2/sites-available/$site  /etc/apache2/sites-enabled/$site
+    /etc/init.d/apache2 restart > /dev/null 2>&1
     echo "done."
   fi
 }
@@ -80,7 +80,8 @@ setup_wp()
     echo "flush privileges;"
   } > tmp/sql.$$
   mysql -u $mysql_root_user -p$mysql_root_passwd $site_db < tmp/sql.$$
-  chown -R $www-data.webmasters /home/public_html
+  chown -R www-data.webmasters /home/public_html
+  chmod -R g+w /home/public_html
   echo "done."
 }
 
